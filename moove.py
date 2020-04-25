@@ -3,6 +3,8 @@ import os
 from tkinter import *
 import time
 
+
+
 class moove():
     def __init__(self):
         self.points = []
@@ -18,9 +20,9 @@ if __name__ == "__main__":
 
 
     root = Tk()
-    canvas = Canvas(root, width=1000+3, height=700+3)
+    canvas = Canvas(root, width=600+3, height=700+3)
     canvas.pack()
-    canvas.create_rectangle(0, 0, 1000+3, 700+3, fill="white")
+    canvas.create_rectangle(0, 0, 600+2, 700+2, fill="white")
     cAlin=[]
     cApo=[]
     firstCadr =currMoove[0] 
@@ -31,7 +33,7 @@ if __name__ == "__main__":
         cA = canvas.create_oval(po[0]-po[2], po[1]-po[2],po[0]+po[2],po[1]+po[2], fill="#FF5555")    
         cApo.append(cA)
         
-    for cadr in currMoove:
+    for i,cadr in enumerate(currMoove):
         currTime=time.time()
         for lin in range( len(cadr.lines)):
             if not cadr.lines[lin][5]:
@@ -42,6 +44,8 @@ if __name__ == "__main__":
             large = cadr.points[po][2]
             canvas.coords(cApo[po], cadr.points[po][0]-large, cadr.points[po][1]-large,cadr.points[po][0]+large, cadr.points[po][1]+large)
         root.update()
+
+
         time.sleep(1/250)
 
     root.destroy()

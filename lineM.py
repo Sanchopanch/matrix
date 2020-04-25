@@ -85,10 +85,10 @@ while True:
         canvas.coords(po.cAx, int(po.x), int(po.y),int(po.x)+int(po.speedX*4), int(po.y))
         canvas.coords(po.cAy, int(po.x), int(po.y),int(po.x), int(po.y)+int(po.speedY*4))
 ##    updateCheck(matCheck,my_world,canvas, listenPo,cObjRemoovable)
-    if not allOK:
-        time.sleep(.1)
-    else:
-        pass #time.sleep(.1)
+##    if not allOK:
+##        time.sleep(.1)
+##    else:
+##        pass #time.sleep(.1)
 
 
     

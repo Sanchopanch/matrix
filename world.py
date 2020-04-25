@@ -102,9 +102,9 @@ class world():
         line.point2 = p2
         self.addMatLine( line.x1, line.y1, line.x2, line.y2, line)
     def appendTri(self,x1,y1,x2,y2,x3,y3,mm=None):
-        self.appendLine(lineM(x1,y1,x2,y2,granze1=1.2,granze2=.8))
-        self.appendLine(lineM(x2,y2,x3,y3,granze1=1.2,granze2=.8))
-        self.appendLine(lineM(x1,y1,x3,y3,granze1=1.2,granze2=.8))
+        self.appendLine(lineM(x1,y1,x2,y2,granze1=1.5,granze2=.6))
+        self.appendLine(lineM(x2,y2,x3,y3,granze1=1.5,granze2=.6))
+        self.appendLine(lineM(x1,y1,x3,y3,granze1=1.5,granze2=.6))
 
 
     def calcSchnelligkeit(self,koeffiz):
