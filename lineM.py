@@ -8,24 +8,23 @@ import random
 
 
 from world import world,pointM,lineM
-##from check import updateCheck
+from check import updateCheck
 
 
 my_world = world( 1000,700, gravity=0.7 )
 
-my_world.appendLine( lineM(200,400,300,600, moovable1=False))
-my_world.appendLine( lineM(200,600,300,600, moovable1=True))
-my_world.appendLine( lineM(200,600,200,400))
+##my_world.appendLine( lineM(150,400,300,600, moovable1=False))
+##my_world.appendLine( lineM(200,600,300,600))
+##my_world.appendLine( lineM(200,600,150,400, moovable1=False))
+my_world.appendTri(300,600, 200,550, 290,620)
+my_world.pointList[0].moovable = False
+my_world.appendTri(220,400, 280,400, 250,420)
 
-##my_world.appendLine( lineM(220,400,300,400))
-##my_world.appendLine( lineM(300,420,300,400))
-##my_world.appendLine( lineM(300,420,220,400))
 
-
-for i in range(4):
-    for ii in range(3):
-        my_world.appendTri(230+(i*20),330+(ii*20),    230+(i*20+20),330+(ii*20)   , 230+(i*20),330+(20)+(ii*20))
-        my_world.appendTri(230+(i*20),330+20+(ii*20), 230+(i*20+20),330+20+(ii*20), 230+(i*20+20),330+(ii*20))
+##for i in range(4):
+##    for ii in range(3):
+##        my_world.appendTri(230+(i*20),330+(ii*20),    230+(i*20+20),330+(ii*20)   , 230+(i*20),330+(20)+(ii*20))
+##        my_world.appendTri(230+(i*20),330+20+(ii*20), 230+(i*20+20),330+20+(ii*20), 230+(i*20+20),330+(ii*20))
 
 
 root = Tk()
@@ -34,16 +33,16 @@ canvas.pack()
 canvas.create_rectangle(0, 0, my_world.x_size+3, my_world.y_size+3, fill="white")
 
 ##check**************************************
-##canvas.create_rectangle(my_world.x_size-400, 0, my_world.x_size+3, 300, fill="#F2F2F2",width=0)
-##matCheck, listenPo = [],3
-##cObjRemoovable = []
-##for i in range(int(400/20)):
-##    newList = []
-##    for ii in range(int(300/20)):
-##        newList.append(canvas.create_rectangle(my_world.x_size-400+i*20,
-##                                               ii*20,my_world.x_size-400+(i+1)*20, (ii+1)*20, width=0))
-##    matCheck.append(newList)
-##updateCheck(matCheck,my_world,canvas, listenPo,cObjRemoovable)
+canvas.create_rectangle(my_world.x_size-400, 0, my_world.x_size+3, 300, fill="#F2F2F2",width=0)
+matCheck, listenPo = [],4
+cObjRemoovable = []
+for i in range(int(400/20)):
+    newList = []
+    for ii in range(int(300/20)):
+        newList.append(canvas.create_rectangle(my_world.x_size-400+i*20,
+                                               ii*20,my_world.x_size-400+(i+1)*20, (ii+1)*20, width=0))
+    matCheck.append(newList)
+updateCheck(matCheck,my_world,canvas, listenPo,cObjRemoovable)
 #end of check****************************
 
 
@@ -84,11 +83,11 @@ while True:
         canvas.coords(po.cA, int(po.x)-po.large, int(po.y)-po.large,int(po.x)+po.large, int(po.y)+po.large)
         canvas.coords(po.cAx, int(po.x), int(po.y),int(po.x)+int(po.speedX*4), int(po.y))
         canvas.coords(po.cAy, int(po.x), int(po.y),int(po.x), int(po.y)+int(po.speedY*4))
-##    updateCheck(matCheck,my_world,canvas, listenPo,cObjRemoovable)
-##    if not allOK:
-##        time.sleep(.1)
-##    else:
-##        pass #time.sleep(.1)
+    updateCheck(matCheck,my_world,canvas, listenPo,cObjRemoovable)
+    if not allOK:
+        time.sleep(1)
+    else:
+        pass #time.sleep(.1)
 
 
     

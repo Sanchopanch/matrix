@@ -19,7 +19,7 @@ class pointM():
 
 class lineM():
     def __init__(self,x1,y1,x2,y2,m1=3,m2=3,granze1=1.3,granze2=0.7,
-                 steifheit=2.5, moovable1=True, moovable2=True):
+                 steifheit=3.5, moovable1=True, moovable2=True):
         self.steifheit = steifheit
         self.x1 = x1
         self.x2 = x2
@@ -55,7 +55,7 @@ class lineM():
         return  forsX, forsY               
         
 class world():
-    def __init__(self,x_size,y_size , gravity = 0.1, resistance = 0.2):
+    def __init__(self,x_size,y_size , gravity = 0.1, resistance = 0.3):
         self.lines = []
         self.x_size = x_size
         self.y_size = y_size
@@ -187,7 +187,7 @@ class world():
         koef1speed = 1 if koef1speed>1 else koef1speed
         koef2speed = l2 / length
         koef2speed = 1 if koef2speed>1 else koef2speed
-        m  = line.m1 * koef1speed + line.m1 * koef2speed
+        m  = line.m1 * koef1speed + line.m2 * koef2speed
         speedX = line.point1.speedX*  (1-koef1speed)  + line.point2.speedX* (1-koef2speed)
         speedY = line.point1.speedY*  (1-koef1speed)  + line.point2.speedY* (1-koef2speed)
 
@@ -217,8 +217,8 @@ class world():
         
         speedX1_ = speedX1 + normX* (speed1*cosSchlag if speed1*cosSchlag>.5 else .5)
         speedY1_ = speedX1 + normY* (speed1*cosSchlag if speed1*cosSchlag>.5 else .5)
-        speedX2_ = speedX2 - normX* (speed2*cosSchlag )
-        speedY2_ = speedY2 - normY* (speed2*cosSchlag )
+        speedX2_ = speedX2 - normX* (speed2*cosSchlag if speed2*cosSchlag>.5 else .5)
+        speedY2_ = speedY2 - normY* (speed2*cosSchlag if speed2*cosSchlag>.5 else .5)
 
         newX1line    = speedX1_ *  (1-koefspeed1) + line.point1.speedX   *koefspeed1
         newX2line    = speedX1_ *  (1-koefspeed2) + line.point2.speedX   *koefspeed2
@@ -288,7 +288,7 @@ class world():
 
     def move(self, koeffiz ):
         already = []
-        for iii in range(15):
+        for iii in range(4):
             for po in self.pointList:
                 if not po.moovable:
                     already.append(po)
