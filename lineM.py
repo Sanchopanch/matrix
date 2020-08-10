@@ -13,18 +13,34 @@ from check import updateCheck
 
 my_world = world( 1000,700, gravity=0.7 )
 
-##my_world.appendLine( lineM(150,400,300,600, moovable1=False))
-##my_world.appendLine( lineM(200,600,300,600))
-##my_world.appendLine( lineM(200,600,150,400, moovable1=False))
-my_world.appendTri(300,600, 200,550, 290,620)
+##check**************************************
+checking = False
+
+##my_world.appendTri(230+(20),430+(20),    230+(20+20),430+(20)   , 230+(20),   440+(20))
+for i in range(15):
+    for ii in range(1):
+        my_world.appendTri(100+(i*20),530+(ii*20),    100+(i*20+20),530+(ii*20)   , 100+(i*20),530+(20)+(ii*20))
+        my_world.appendTri(100+(i*20),530+20+(ii*20), 100+(i*20+20),530+20+(ii*20), 100+(i*20+20),530+(ii*20))
 my_world.pointList[0].moovable = False
-my_world.appendTri(220,400, 280,400, 250,420)
+my_world.pointList[len(my_world.pointList)-1].moovable = False
+
+##my_world.appendTri(130+(20),560+(20),    130+(20+20),640+(20)   , 330+(20),   530+(20)+(20))
+for i in range(3):
+    for ii in range(2):
+        my_world.appendTri(230+(i*20),430+(ii*20),    230+(i*20+20),430+(ii*20)   , 230+(i*20),   430+(20)+(ii*20))
+        my_world.appendTri(230+(i*20),430+20+(ii*20), 230+(i*20+20),430+20+(ii*20), 230+(i*20+20),430+(ii*20))
 
 
-##for i in range(4):
-##    for ii in range(3):
-##        my_world.appendTri(230+(i*20),330+(ii*20),    230+(i*20+20),330+(ii*20)   , 230+(i*20),330+(20)+(ii*20))
-##        my_world.appendTri(230+(i*20),330+20+(ii*20), 230+(i*20+20),330+20+(ii*20), 230+(i*20+20),330+(ii*20))
+##my_world.appendTri(250,490, 400,450, 400,520)
+##my_world.pointList[4].moovable = False
+##my_world.pointList[5].moovable = False
+##
+##my_world.appendTri(200,490, 200,550, 280,620)
+##my_world.pointList[7].moovable = False
+##my_world.pointList[8].moovable = False
+
+
+
 
 
 root = Tk()
@@ -33,16 +49,16 @@ canvas.pack()
 canvas.create_rectangle(0, 0, my_world.x_size+3, my_world.y_size+3, fill="white")
 
 ##check**************************************
-canvas.create_rectangle(my_world.x_size-400, 0, my_world.x_size+3, 300, fill="#F2F2F2",width=0)
-matCheck, listenPo = [],4
-cObjRemoovable = []
-for i in range(int(400/20)):
-    newList = []
-    for ii in range(int(300/20)):
-        newList.append(canvas.create_rectangle(my_world.x_size-400+i*20,
-                                               ii*20,my_world.x_size-400+(i+1)*20, (ii+1)*20, width=0))
-    matCheck.append(newList)
-updateCheck(matCheck,my_world,canvas, listenPo,cObjRemoovable)
+matCheck, listenPo, cObjRemoovable = [],3,[]
+if checking:
+    canvas.create_rectangle(my_world.x_size-400, 0, my_world.x_size+3, 300, fill="#F2F2F2",width=0)
+    for i in range(int(400/20)):
+        newList = []
+        for ii in range(int(300/20)):
+            newList.append(canvas.create_rectangle(my_world.x_size-400+i*20,
+                                                   ii*20,my_world.x_size-400+(i+1)*20, (ii+1)*20, width=0))
+        matCheck.append(newList)
+    updateCheck(matCheck,my_world,canvas, listenPo,cObjRemoovable)
 #end of check****************************
 
 
@@ -61,7 +77,9 @@ nom =0
 while True:
     my_world.calcSchnelligkeit(currKoeff)
 
-    currKoeff = my_world.calcSpeeds(currKoeff)
+    currKoeff = my_world.calcSpeedKoeff()
+    my_world.calcSpeeds(currKoeff)
+    currKoeff = my_world.calcSpeedKoeff()
     # M O V E !
     allOK = my_world.move(currKoeff)
     # =======
@@ -83,7 +101,10 @@ while True:
         canvas.coords(po.cA, int(po.x)-po.large, int(po.y)-po.large,int(po.x)+po.large, int(po.y)+po.large)
         canvas.coords(po.cAx, int(po.x), int(po.y),int(po.x)+int(po.speedX*4), int(po.y))
         canvas.coords(po.cAy, int(po.x), int(po.y),int(po.x), int(po.y)+int(po.speedY*4))
-    updateCheck(matCheck,my_world,canvas, listenPo,cObjRemoovable)
+        
+    if checking: updateCheck(matCheck,my_world,canvas, listenPo,cObjRemoovable)
+#end of check****************************
+    
     if not allOK:
         time.sleep(1)
     else:
@@ -113,7 +134,7 @@ while True:
         cadr.pause = 1 / currKoeff
         cadrs.append(cadr)
         currTime=0.0
-        if len(cadrs) >=400:
+        if len(cadrs) >=520:
             fileName='mov_1.pkl'
             with open(fileName,'wb') as f:
                 pickle.dump(cadrs, f)

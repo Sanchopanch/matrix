@@ -19,7 +19,12 @@ def updateCheck(matCheck,my_world,canvas, listenPo, cObjRemoovable):
             if currXmat<0 or currYmat<0 or currXmat>=my_world.x_size or currYmat>=my_world.y_size:
                 continue
             if len(my_world.mat[currXmat][currYmat])>0:
-                canvas.itemconfig(matCheck[x][y], fill="#F3DDFA")
+                for lin in my_world.mat[currXmat][currYmat]:
+                    if lin.point1 == currPo or lin.point2 == currPo:
+                        canvas.itemconfig(matCheck[x][y], fill="#53DDF1")
+                        break
+                else:
+                    canvas.itemconfig(matCheck[x][y], fill="#F3DDFA")
             else:
                 canvas.itemconfig(matCheck[x][y], fill="#F3FAFA")
             for li in my_world.mat[currXmat][currYmat]:

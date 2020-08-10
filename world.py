@@ -1,4 +1,5 @@
 import math
+from genXY import renerateXYline
 class pointM():
     def __init__(self,x,y,mass, moovable = True):
         self.x = x
@@ -18,8 +19,8 @@ class pointM():
         self.color="#FF5555"
 
 class lineM():
-    def __init__(self,x1,y1,x2,y2,m1=3,m2=3,granze1=1.3,granze2=0.7,
-                 steifheit=3.5, moovable1=True, moovable2=True):
+    def __init__(self,x1,y1,x2,y2,m1=2.0,m2=2.0,granze1=1.4,granze2=0.6,
+                 steifheit=15.5, moovable1=True, moovable2=True):
         self.steifheit = steifheit
         self.x1 = x1
         self.x2 = x2
@@ -52,10 +53,29 @@ class lineM():
             massKoeff = self.point1.mass / self.point2.mass
             forsX =  cos * massKoeff * (self.lange-currLange) * self.steifheit
             forsY =  sin * massKoeff * (self.lange-currLange) * self.steifheit
-        return  forsX, forsY               
+        return  forsX, forsY
+
+    def calcSignNormX(self,x,y,xNor = True):
+        if (self.x2 - self.x1)==0:
+            if xNor:
+                rez = 1 if  x >= self.x1 else -1
+            else:
+                rez = 0 #???    
+        else:                                                         # y = kx + b
+            k =           (self.y2 - self.y1) / (self.x2 - self.x1)   # y = mx + k
+            b = self.y1 - self.x1 * (self.y2 - self.y1) / (self.x2 - self.x1) 
+            if xNor:
+                xN =     (x + k*y - k*b) / (k**2 +1)
+                rez = 1 if  x >= xN else -1
+            else:
+                lineX1,lineX2,lineY1,lineY2 = self.x1,self.x2,self.y1,self.y2
+                yN = b + k*(x + k*y - k*b) / (k**2 +1)
+                rez = 1 if  y >= yN else -1
+        return rez
+        
         
 class world():
-    def __init__(self,x_size,y_size , gravity = 0.1, resistance = 0.3):
+    def __init__(self,x_size,y_size , gravity = 0.07, resistance = 0.1):
         self.lines = []
         self.x_size = x_size
         self.y_size = y_size
@@ -100,7 +120,7 @@ class world():
             self.pointList.append(p2)
         line.point1 = p1
         line.point2 = p2
-        self.addMatLine( line.x1, line.y1, line.x2, line.y2, line)
+        self.addMatLine( line)
     def appendTri(self,x1,y1,x2,y2,x3,y3,mm=None):
         self.appendLine(lineM(x1,y1,x2,y2,granze1=1.5,granze2=.6))
         self.appendLine(lineM(x2,y2,x3,y3,granze1=1.5,granze2=.6))
@@ -117,62 +137,61 @@ class world():
             for lin in self.linesList:
                 if lin.point1 == po:
                     forsX, forsY = lin.calcForces(1)
-                    accX += forsX 
-                    accY += forsY 
+                    accX += forsX / koeffiz 
+                    accY += forsY / koeffiz 
                 elif lin.point2 == po:
                     forsX, forsY = lin.calcForces(2)
-                    accX +=  forsX 
-                    accY +=  forsY 
-            resistX = po.speedX / koeffiz * self.resistance
-            resistY = po.speedY / koeffiz * self.resistance
-            accX -= resistX
-            accY -= resistY
+                    accX +=  forsX / koeffiz 
+                    accY +=  forsY / koeffiz 
+            resistX = -po.speedX  * self.resistance
+            resistY = -po.speedY  * self.resistance
+            accX += resistX / koeffiz
+            accY += resistY / koeffiz
             po.accX = accX
             po.accY = accY
             po.accX1 = -resistX
             po.accY1 = -resistY
             
-    def calcSpeeds(self,koeffiz):
+    def calcSpeedKoeff(self):
         maxSpeed=0
         for po in self.pointList:
             if not po.moovable:
                 continue
-            newSpeedX = po.speedX + po.accX / koeffiz
-            newSpeedX = 20 if newSpeedX>20 else newSpeedX
-            newSpeedX = -20 if newSpeedX<-20 else newSpeedX
-            newSpeedY = po.speedY + po.accY / koeffiz
-            newSpeedY = 20 if newSpeedY>20 else newSpeedY
-            newSpeedY = -20 if newSpeedY<-20 else newSpeedY
-            newSpeed = math.sqrt(newSpeedX**2+newSpeedY**2)
+            newSpeed = math.sqrt(po.speedX**2+po.speedY**2)
             maxSpeed = newSpeed if newSpeed > maxSpeed else maxSpeed
-        maxSpeed = 4 if maxSpeed < 4 else maxSpeed
+        maxSpeed = 2 if maxSpeed < 2 else maxSpeed
+        return maxSpeed*3         
+            
+    def calcSpeeds(self,koeffiz):
+##        for po in self.pointList:
+##            if not po.moovable:
+##                continue
+##            newSpeedX = po.speedX + po.accX / koeffiz
+##            newSpeedY = po.speedY + po.accY / koeffiz
         for po in self.pointList:
             if not po.moovable:
                 continue
-            po.speedX += po.accX / maxSpeed
-            po.speedY += po.accY / maxSpeed
-        return  maxSpeed
+            po.speedX += po.accX / koeffiz
+            po.speedY += po.accY / koeffiz
+            po.speedX = 100 if po.speedX > 100 else po.speedX
+            po.speedX = -100 if po.speedX < -100 else po.speedX
+            po.speedY = 100 if po.speedY > 100 else po.speedY
+            po.speedY = -100 if po.speedY < -100 else po.speedY
+            
+##        return  maxSpeed
 
-    def addMatLine(self, x1, y1, x2, y2, line):
-        length = int(math.sqrt((x1-x2)**2+(y1-y2)**2))
-        length = 1 if length < 1 else length
-
-        for aaa in range(int(length*2)):
-            currX = int(x1 + aaa * (x2 - x1) / length/2)
-            currY = int(y1 + aaa * (y2 - y1) / length/2)
+    def addMatLine(self, line):
+        for currX,currY,xf,yf in renerateXYline(line.x1, line.y1, line.x2, line.y2):
             currList = self.mat[currX][currY]
             if not line in currList:
                 currList.append(line)
-    def minusMatLine(self, x1, y1, x2, y2, line):
-       length = int(math.sqrt((x1-x2)**2+(y1-y2)**2))
-       length = 1 if length < 1 else length
-       for aaa in range(int(length*2)):
-            currX = int(x1 + aaa * (x2 - x1) / length/2)
-            currY = int(y1 + aaa * (y2 - y1) / length/2)
+                
+    def minusMatLine(self, line):
+        for currX,currY,xf,yf in renerateXYline(line.x1, line.y1, line.x2, line.y2):
             currList = self.mat[currX][currY]
             if line in currList:
                 while line in currList: currList.remove(line)
-                #del currList[currList.index(line)]
+               
                 
     def impulse1(self, line, currX, currY):
         length = math.sqrt( (line.x1 - line.x2)**2+(line.y1 - line.y2)**2)
@@ -194,31 +213,47 @@ class world():
         return centroCoeff,m,speedX,speedY, koef1speed, koef2speed
         
     def impulse(self, line, lineM, currX, currY, oldX, oldY):
-        centroCoeff1, m1, speedX1,  speedY1,  koefspeed1, koefspeed2     = self.impulse1(line,  currX, currY)
-        centroCoeff2, m2, speedX2,  speedY2,  koefspeed1_m, koefspeed2_m = self.impulse1(lineM, currX, currY)
-        koeffNormalX = 1 if currX<=oldX else -1
-        koeffNormalY = 1 if currY<=oldY else -1
+        centroCoeff1, m1, speedX1,  speedY1,  koefspeed1,   koefspeed2   = self.impulse1(line,  oldX, oldY)
+        centroCoeff2, m2, speedX2,  speedY2,  koefspeed1_m, koefspeed2_m = self.impulse1(lineM, oldX, oldY)
+
+        lineX1,lineX2,lineMX1,lineMX2 = line.x1,line.x2,lineM.x1,lineM.x2
+        lineY1,lineY2,lineMY1,lineMY2 = line.y1,line.y2,lineM.y1,lineM.y2
         if centroCoeff2 > centroCoeff1:
-            normX = 0 if (line.x2 - line.x1)==0 else  koeffNormalX* 1 / (line.x2 - line.x1)
-            normY = 0 if (line.y2 - line.y1)==0 else  koeffNormalY* 1 / (line.y2 - line.y1)
+            # normal from line
+            koeffNormalX = line.calcSignNormX(oldX,oldY,True)
+            koeffNormalY = line.calcSignNormX(oldX,oldY,False)
+            normX = 0 if (line.x2 - line.x1)==0 else  koeffNormalX* 1 / abs(line.x2 - line.x1)
+            normY = 0 if (line.y2 - line.y1)==0 else  koeffNormalY* 1 / abs(line.y2 - line.y1)
+            signForce = -1
         else:
-            normX = 0 if (lineM.x2 - lineM.x1)==0 else  koeffNormalX* 1 / (lineM.x2 - lineM.x1)
-            normY = 0 if (lineM.y2 - lineM.y1)==0 else  koeffNormalY* 1 / (lineM.y2 - lineM.y1)
+            # normal from lineM
+            koeffNormalX = lineM.calcSignNormX(oldX,oldY,True)
+            koeffNormalY = lineM.calcSignNormX(oldX,oldY,False)
+            normX = 0 if (lineM.x2 - lineM.x1)==0 else  koeffNormalX* 1 / abs(lineM.x2 - lineM.x1)
+            normY = 0 if (lineM.y2 - lineM.y1)==0 else  koeffNormalY* 1 / abs(lineM.y2 - lineM.y1)
+            signForce = 1
+            
         normalizeKoeff = (1/math.sqrt(normX**2+normY**2))
         normX, normY = normX* normalizeKoeff, normY* normalizeKoeff 
 
-        cosSchlag = (speedX1 *normX + speedY1 *normY) / math.sqrt(speedX1**2 + speedY1**2)/math.sqrt(normX**2 + normY**2)
-            
+        if (speedX1==0 and speedY1==0) or (normX==0 and normY==0):
+            cosSchlag = 0
+        else:
+            # cosinus angle between normal vector and speed 1 (line)
+            cosSchlag = (speedX1 *normX + speedY1 *normY) / math.sqrt(speedX1**2 + speedY1**2) / math.sqrt(normX**2 + normY**2)
+                
+        cosSchlag = abs(cosSchlag)
+        cosSchlag = .1 if cosSchlag < .1 else cosSchlag    
        # after 
 ##        speed1 = ((m1 - m2) * math.sqrt(speedX1**2+speedY1**2)) /  (m1 + m2)
 ##        speed2 = (  2 * m1  * math.sqrt(speedX2**2+speedY2**2)) /  (m1 + m2)
-        speed1 = -(  2 * m1  * math.sqrt(speedX1**2+speedY1**2)) /  (m1 + m2)
-        speed2 = -((m1 - m2) * math.sqrt(speedX2**2+speedY2**2)) /  (m1 + m2)
+        speed1 = (  m2 / m1  * math.sqrt(speedX1**2+speedY1**2)) 
+        speed2 = (  m1 / m2  * math.sqrt(speedX1**2+speedY1**2)) 
         
-        speedX1_ = speedX1 + normX* (speed1*cosSchlag if speed1*cosSchlag>.5 else .5)
-        speedY1_ = speedX1 + normY* (speed1*cosSchlag if speed1*cosSchlag>.5 else .5)
-        speedX2_ = speedX2 - normX* (speed2*cosSchlag if speed2*cosSchlag>.5 else .5)
-        speedY2_ = speedY2 - normY* (speed2*cosSchlag if speed2*cosSchlag>.5 else .5)
+        speedX1_ = speedX1 + signForce* normX * speed1 * cosSchlag
+        speedY1_ = speedY1 + signForce* normY * speed1 * cosSchlag 
+        speedX2_ = speedX2 - signForce* normX * speed2 * cosSchlag 
+        speedY2_ = speedY2 - signForce* normY * speed2 * cosSchlag 
 
         newX1line    = speedX1_ *  (1-koefspeed1) + line.point1.speedX   *koefspeed1
         newX2line    = speedX1_ *  (1-koefspeed2) + line.point2.speedX   *koefspeed2
@@ -247,43 +282,37 @@ class world():
         lengthOld = 1 if lengthOld < 1 else lengthOld
         
         if num==1:
-            length = round(math.sqrt((newX - line.x2) **2 + (newY - line.y2) **2))
-            length = 1 if length < 1 else length
-            numSteep = max(length,lengthOld)
-            steep = 1 / numSteep 
-            for aaa in range(numSteep*3):
-                oldX =  (line.x2  + aaa * steep * (line.x1 - line.x2) / 3)
-                oldY =  (line.y2  + aaa * steep * (line.y1 - line.y2) / 3)
-                currX = (line.x2 + aaa * steep * (newX - line.x2)     / 3)
-                currY = (line.y2 + aaa * steep * (newY - line.y2)     / 3)
-                currList = self.mat[int(currX)][int(currY)]
+           length = round(math.sqrt((newX - line.x2) **2 + (newY - line.y2) **2))
+           length = 1 if length < 1 else length
+           for currX,currY,xf,yf in renerateXYline(newX, newY, line.x2, line.y2):
+                currList = self.mat[currX][currY]
                 if line in currList:
                     continue
                 for lineM in currList:
                     if lineM.point1==line.point1 or lineM.point1==line.point2 or lineM.point2==line.point1 or lineM.point2==line.point2:
                         continue
-                    self.impulse( line, lineM, currX, currY, oldX, oldY)
-                    return False
-            return True
+                    progress = math.sqrt((xf - line.x2) **2 + (yf - line.y2) **2)/length
+                    oldX = line.x2 + (line.x1 - line.x2) * progress
+                    oldY = line.y2 + (line.y1 - line.y2) * progress
+                    self.impulse( line, lineM, xf, yf, oldX, oldY )
+                    return False, lineM
+           return True, None
         elif num==2:
             length = round(math.sqrt((newX - line.x1) **2 + (newY - line.y1) **2))
             length = 1 if length < 1 else length
-            numSteep = max(length,lengthOld)
-            steep = 1 / numSteep 
-            for aaa in range(numSteep*3):
-                oldX =  (line.x1  + aaa * steep * (line.x2 - line.x1) / 3)
-                oldY =  (line.y1  + aaa * steep * (line.y2 - line.y1) / 3)
-                currX = (line.x1 + aaa * steep * (newX - line.x1)     / 3)
-                currY = (line.y1 + aaa * steep * (newY - line.y1)     / 3)
-                currList = self.mat[int(currX)][int(currY)]
+            for currX,currY,xf,yf in renerateXYline( line.x1, line.y1,newX, newY):
+                currList = self.mat[currX][currY]
                 if line in currList:
                     continue
                 for lineM in currList:
                     if lineM.point1==line.point1 or lineM.point1==line.point2 or lineM.point2==line.point1 or lineM.point2==line.point2:
                         continue
-                    self.impulse( line, lineM, currX, currY, oldX, oldY)
-                    return False
-            return True
+                    progress = math.sqrt((xf - line.x1) **2 + (yf - line.y1) **2)/lengthOld
+                    oldX = line.x1 + (line.x2 - line.x1) * progress
+                    oldY = line.y1 + (line.y2 - line.y1) * progress
+                    self.impulse( line, lineM, xf, yf, oldX, oldY )
+                    return False, lineM
+            return True, None
 
 
     def move(self, koeffiz ):
@@ -312,33 +341,47 @@ class world():
                     po.speedY = 0
                 #lets move
                 notColliz = True
-##                if not newXint==curXint  or not newYint==curYint :
                 for lin in self.linesList:
+                    if lin.broken:
+                        continue
                     if lin.point1 == po:
                         # let's check for collisions
-                        notColliz = self.gelegenheitMove(lin, 1, newX, newY)
-                        if not notColliz:
-                            break
+                        notColliz, lineM = self.gelegenheitMove(lin, 1, newX, newY)
                     if lin.point2 == po:
-                        notColliz = self.gelegenheitMove(lin, 2, newX, newY)
-                        if not notColliz:
-                            break
-                if notColliz:
+                        notColliz, lineM = self.gelegenheitMove(lin, 2, newX, newY)
+                    if not notColliz: break
+                if not notColliz:
+                    if lineM.point1 in already:
+                        already.remove(lineM.point1)
+                    if lineM.point2 in already:
+                        already.remove(lineM.point2)
+                else:
                     for lin in self.linesList:
-                         if lin.point1 == po:
-                             self.minusMatLine(lin.x1, lin.y1, lin.x2, lin.y2, lin)
+                        if lin.broken:
+                             continue
+                        if lin.point1 == po:
+                             self.minusMatLine( lin)
                              lin.x1 = newX
                              lin.y1 = newY
-                             self.addMatLine(lin.x1, lin.y1, lin.x2, lin.y2, lin)
-                         if lin.point2 == po:
-                             self.minusMatLine(lin.x1, lin.y1, lin.x2, lin.y2, lin)
+                             self.addMatLine( lin)
+                        if lin.point2 == po:
+                             self.minusMatLine( lin)
                              lin.x2 = newX
                              lin.y2 = newY
-                             self.addMatLine(lin.x1, lin.y1, lin.x2, lin.y2, lin)
+                             self.addMatLine( lin)
                     po.x = newX
                     po.y = newY
                     already.append(po)
-                
+                    
+            koeffiz = self.calcSpeedKoeff()
+            for lin in self.linesList:
+                if not lin.point1 in already:
+                    lin.point1.speedX *= .95
+                    lin.point1.speedY *= .95    
+                if not lin.point2 in already:
+                    lin.point2.speedX *= .95
+                    lin.point2.speedY *= .95    
+          
         for lin in self.linesList:
             lin.color="#FF1111" if not lin.point1 in already or not lin.point2 in already else "#999999"
         if len(already)<len(self.pointList):
@@ -353,8 +396,8 @@ class world():
                             / lin.lange
                 if lin.granze1<currLange:
                     lin.broken = True
-                    self.minusMatLine(lin.x1, lin.y1, lin.x2, lin.y2, lin)
+                    self.minusMatLine( lin)
                 if lin.granze2>currLange:
                     lin.broken = True
-                    self.minusMatLine(lin.x1, lin.y1, lin.x2, lin.y2, lin)
+                    self.minusMatLine( lin)
 
